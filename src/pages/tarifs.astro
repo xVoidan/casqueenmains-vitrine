@@ -1,0 +1,72 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PricingCard from "../components/PricingCard.astro";
+
+const features = [
+    "Accès illimité aux quiz",
+    "Toutes les fiches de révision",
+    "Concours blancs illimités",
+    "Suivi de progression détaillé",
+    "Mode hors-ligne (PWA)",
+    "Support prioritaire",
+];
+---
+
+<Layout
+    title="Tarifs"
+    description="Découvrez nos offres d'abonnement pour préparer le concours de Sapeur-Pompier Professionnel."
+>
+    <div class="pt-32 pb-20 relative overflow-hidden">
+        <!-- Background decorations -->
+        <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0 pointer-events-none"
+        >
+            <div
+                class="absolute top-20 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"
+            >
+            </div>
+            <div
+                class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px]"
+            >
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                    Investissez dans votre avenir
+                </h1>
+                <p class="text-xl text-gray-400">
+                    Une préparation complète à un prix accessible. Commencez
+                    votre essai gratuit de 3 jours dès aujourd'hui.
+                </p>
+            </div>
+
+            <div
+                class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            >
+                <PricingCard
+                    title="Mensuel"
+                    price="3,99€"
+                    period="mois"
+                    features={features}
+                    isPopular={false}
+                />
+                <PricingCard
+                    title="Annuel"
+                    price="39,99€"
+                    period="an"
+                    features={[...features, "2 mois offerts (économie de ~8€)"]}
+                    isPopular={true}
+                />
+            </div>
+
+            <div class="mt-16 text-center">
+                <p class="text-gray-500 text-sm">
+                    Paiement sécurisé via Stripe. Annulation possible à tout
+                    moment depuis votre espace personnel.
+                </p>
+            </div>
+        </div>
+    </div>
+</Layout>
