@@ -4,33 +4,63 @@ const currentYear = new Date().getFullYear();
 
 <footer class="border-t border-white/5 bg-navy-900 relative z-10">
     <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="mb-4 md:mb-0">
-                <span class="text-xl font-bold text-white">
-                    Casque en <span class="text-accent">mains</span>
-                </span>
-                <p class="mt-2 text-sm text-gray-400">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <!-- Logo & Description -->
+            <div class="flex flex-col items-center md:items-start">
+                <div class="flex items-center gap-2 mb-2">
+                    <img
+                        src="/LogoApp.webp"
+                        alt="Casque En Mains"
+                        class="h-8 w-8"
+                    />
+                    <span class="text-xl font-bold text-white">
+                        Casque En <span class="text-accent">Mains</span>
+                    </span>
+                </div>
+                <p class="text-sm text-gray-400 text-center md:text-left">
                     L'outil indispensable pour votre réussite.
                 </p>
             </div>
-            <div class="flex space-x-6">
-                <a
-                    href="#"
-                    class="text-gray-400 hover:text-white transition-colors"
-                >
-                    Mentions légales
-                </a>
-                <a
-                    href="#"
-                    class="text-gray-400 hover:text-white transition-colors"
-                >
-                    Contact
-                </a>
+
+            <!-- Navigation -->
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="text-sm font-semibold text-white mb-3">Navigation</h3>
+                <div class="flex flex-col space-y-2 text-center md:text-left">
+                    <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        Accueil
+                    </a>
+                    <a href="/tarifs" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        Tarifs
+                    </a>
+                    <a href="https://app.casqueenmains.fr" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        Se connecter
+                    </a>
+                </div>
+            </div>
+
+            <!-- Légal -->
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="text-sm font-semibold text-white mb-3">Légal</h3>
+                <div class="flex flex-col space-y-2 text-center md:text-left">
+                    <a href="/legal/cgu.md" target="_blank" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        CGU
+                    </a>
+                    <a href="/legal/cga.md" target="_blank" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        CGA
+                    </a>
+                    <a href="/legal/politique-de-confidentialite.md" target="_blank" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        Confidentialité
+                    </a>
+                    <a href="/legal/mentions-legales.md" target="_blank" class="text-sm text-gray-400 hover:text-white transition-colors">
+                        Mentions légales
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="mt-8 border-t border-white/5 pt-8 text-center">
+
+        <div class="border-t border-white/5 pt-8 text-center">
             <p class="text-sm text-gray-500">
-                &copy; {currentYear} Casque en mains. Tous droits réservés.
+                &copy; {currentYear} Casque En Mains. Tous droits réservés.
             </p>
         </div>
     </div>

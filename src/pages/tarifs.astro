@@ -2,19 +2,44 @@
 import Layout from "../layouts/Layout.astro";
 import PricingCard from "../components/PricingCard.astro";
 
-const features = [
-    "Accès illimité aux quiz",
-    "Toutes les fiches de révision",
-    "Concours blancs illimités",
-    "Suivi de progression détaillé",
-    "Mode hors-ligne (PWA)",
-    "Support prioritaire",
+const premiumFeatures = [
+    "Questions illimitées (QCM & QCU)",
+    "Concours blancs",
+    "Modes multijoueurs",
+    "Statistiques détaillées & progression",
+    "Défis quotidiens & badges",
+    "Journal d'actualités dédié aux sapeur-pompiers",
+    "Mémentos interactifs avec annotations",
+    "Classement national et départemental",
+];
+
+const faqItems = [
+    {
+        question: "L'essai de 7 jours est-il vraiment sans engagement ?",
+        answer: "Oui, vous pouvez annuler à tout moment pendant les 7 jours d'essai. Si vous annulez avant la fin de l'essai, vous ne serez pas facturé.",
+    },
+    {
+        question: "Que se passe-t-il après l'essai de 7 jours ?",
+        answer: "Après 7 jours, votre abonnement est renouvelé automatiquement au tarif de la formule choisie (Mensuel ou Annuel). Vous recevrez une notification avant la fin de l'essai.",
+    },
+    {
+        question: "Puis-je changer de formule en cours d'abonnement ?",
+        answer: "Oui, vous pouvez passer du Mensuel à l'Annuel (ou inversement) à tout moment depuis votre espace personnel. Le changement prendra effet à la prochaine période de facturation.",
+    },
+    {
+        question: "Les prix sont-ils TTC ?",
+        answer: "Oui, tous les prix affichés incluent la TVA. Aucun frais caché.",
+    },
+    {
+        question: "Comment puis-je annuler mon abonnement ?",
+        answer: "Vous pouvez annuler votre abonnement à tout moment depuis votre espace personnel, section 'Mon abonnement'. L'annulation prend effet à la fin de la période en cours.",
+    },
 ];
 ---
 
 <Layout
     title="Tarifs"
-    description="Découvrez nos offres d'abonnement pour préparer le concours de Sapeur-Pompier Professionnel."
+    description="Choisissez la formule qui vous convient pour débloquer l'accès complet à Casque En Mains."
 >
     <div class="pt-32 pb-20 relative overflow-hidden">
         <!-- Background decorations -->
@@ -22,51 +47,259 @@ const features = [
             class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0 pointer-events-none"
         >
             <div
-                class="absolute top-20 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"
+                class="absolute top-20 right-0 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-[140px]"
             >
             </div>
             <div
-                class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px]"
+                class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[140px]"
             >
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
-                    Investissez dans votre avenir
+            <!-- Header -->
+            <div class="text-center max-w-4xl mx-auto mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                    Toutes les fonctionnalités, votre rythme
                 </h1>
-                <p class="text-xl text-gray-400">
-                    Une préparation complète à un prix accessible. Commencez
-                    votre essai gratuit de 3 jours dès aujourd'hui.
+                <p class="text-xl text-gray-400 mb-12">
+                    Choisissez la formule qui vous correspond
                 </p>
+
+                <!-- Liste des fonctionnalités -->
+                <div class="glass-card p-8 md:p-10 rounded-2xl border border-white/10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        {premiumFeatures.map((feature) => (
+                            <div class="flex items-start gap-3">
+                                <svg
+                                    class="h-6 w-6 text-accent shrink-0 mt-0.5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M5 13l4 4L19 7"
+                                    />
+                                </svg>
+                                <span class="text-gray-300 text-base leading-relaxed">{feature}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
+            <!-- Pricing Cards -->
             <div
-                class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+                class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-20"
             >
                 <PricingCard
                     title="Mensuel"
                     price="3,99€"
                     period="mois"
-                    features={features}
                     isPopular={false}
+                    ctaText="Essayer 7 jours"
                 />
                 <PricingCard
                     title="Annuel"
-                    price="39,99€"
+                    price="29,99€"
                     period="an"
-                    features={[...features, "2 mois offerts (économie de ~8€)"]}
+                    pricePerMonth="2,50€"
+                    savings="Économisez 18,89€/an (-37%)"
                     isPopular={true}
+                    ctaText="Essayer 7 jours"
                 />
             </div>
 
+            <!-- Section Sans Abonnement (Transparence) -->
+            <div class="max-w-4xl mx-auto mb-20">
+                <div
+                    class="glass-card p-8 rounded-2xl border border-white/10"
+                >
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="p-3 bg-gray-500/10 rounded-xl border border-gray-500/20 shrink-0"
+                        >
+                            <svg
+                                class="w-6 h-6 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-xl font-bold text-white mb-3"
+                            >
+                                Sans abonnement Premium
+                            </h3>
+                            <p class="text-gray-400 mb-4">
+                                L'accès sans abonnement est très limité :
+                            </p>
+                            <ul class="space-y-2 text-sm text-gray-400">
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-5 h-5 text-gray-500"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        ></path>
+                                    </svg>
+                                    Consultation des mémentos (lecture seule, sans
+                                    annotations)
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-5 h-5 text-red-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Aucun accès aux questions & quiz
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-5 h-5 text-red-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Aucun accès aux concours blancs
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-5 h-5 text-red-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Aucune statistique de progression
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Tarifs -->
+            <div class="max-w-3xl mx-auto mb-16">
+                <h2
+                    class="text-3xl md:text-4xl font-bold text-white mb-8 text-center"
+                >
+                    Questions fréquentes
+                </h2>
+
+                <div class="space-y-4">
+                    {
+                        faqItems.map((item, index) => (
+                            <div class="glass-card rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/10">
+                                <button
+                                    class="w-full px-6 py-5 text-left flex justify-between items-start gap-4 focus:outline-none group"
+                                    aria-expanded="false"
+                                    onclick={`toggleFaqPricing(${index})`}
+                                >
+                                    <span class="text-base font-semibold text-white group-hover:text-accent transition-colors flex-1">
+                                        {item.question}
+                                    </span>
+                                    <span class="shrink-0 text-gray-400 group-hover:text-white transition-colors">
+                                        <svg
+                                            class="w-6 h-6 transform transition-transform duration-200"
+                                            id={`icon-pricing-${index}`}
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 9l-7 7-7-7"
+                                            />
+                                        </svg>
+                                    </span>
+                                </button>
+                                <div
+                                    class="max-h-0 overflow-hidden transition-all duration-300"
+                                    id={`answer-pricing-${index}`}
+                                >
+                                    <div class="px-6 pb-5 text-gray-400 text-sm leading-relaxed">
+                                        {item.answer}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <!-- Reassurance -->
             <div class="mt-16 text-center">
+                <p class="text-gray-500 text-sm mb-2">
+                    💳 Paiement sécurisé via Stripe
+                </p>
                 <p class="text-gray-500 text-sm">
-                    Paiement sécurisé via Stripe. Annulation possible à tout
-                    moment depuis votre espace personnel.
+                    ✅ Annulation possible à tout moment depuis votre espace
+                    personnel
                 </p>
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleFaqPricing(index) {
+            const answer = document.getElementById(`answer-pricing-${index}`);
+            const icon = document.getElementById(`icon-pricing-${index}`);
+            const button = answer?.previousElementSibling;
+
+            if (answer && icon && button) {
+                const isExpanded = button.getAttribute("aria-expanded") === "true";
+
+                if (isExpanded) {
+                    answer.style.maxHeight = "0px";
+                    button.setAttribute("aria-expanded", "false");
+                    icon.style.transform = "rotate(0deg)";
+                } else {
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                    button.setAttribute("aria-expanded", "true");
+                    icon.style.transform = "rotate(180deg)";
+                }
+            }
+        }
+
+        // Expose globally for onclick handlers
+        (window as any).toggleFaqPricing = toggleFaqPricing;
+    </script>
 </Layout>

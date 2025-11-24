@@ -1,0 +1,1991 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { supabase } from '../../../lib/supabase';
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  const { data: chapters } = await supabase
+    .from('memento_contents')
+    .select('chapter_number, memento_slug')
+    .order('sort_order', { ascending: true});
+
+  return chapters?.map((chapter) => ({
+    params: {
+      slug: chapter.memento_slug,
+      id: String(chapter.chapter_number)
+    },
+  })) || [];
+}
+
+const { slug, id } = Astro.params;
+
+// Récupérer le chapitre par numéro
+const { data: chapter } = await supabase
+  .from('memento_contents')
+  .select('*')
+  .eq('chapter_number', id)
+  .eq('memento_slug', slug)
+  .single();
+
+// Récupérer tous les chapitres pour la navigation
+const { data: allChapters } = await supabase
+  .from('memento_contents')
+  .select('id, chapter_number, chapter_title, sort_order')
+  .eq('memento_slug', slug)
+  .order('sort_order', { ascending: true });
+
+if (!chapter) {
+  return Astro.redirect(`/mementos/${slug}`);
+}
+
+// Configurer marked pour supporter GFM (GitHub Flavored Markdown)
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+  headerIds: true,
+  mangle: false
+});
+
+// Convertir le markdown en HTML
+const contentHtml = marked.parse(chapter.content_markdown || '');
+
+// Trouver les chapitres précédent et suivant
+const currentIndex = allChapters?.findIndex(c => String(c.chapter_number) === id) ?? -1;
+const prevChapter = currentIndex > 0 ? allChapters[currentIndex - 1] : null;
+const nextChapter = currentIndex < (allChapters?.length ?? 0) - 1 ? allChapters[currentIndex + 1] : null;
+
+// Calculer le temps de lecture estimé (200 mots/minute)
+const wordCount = chapter.content_markdown?.split(/\s+/).length || 0;
+const readingTime = Math.ceil(wordCount / 200);
+---
+
+<Layout title={`${chapter.chapter_title} - ${chapter.memento_title} - Casque En Mains`}>
+  <div class="synthese-container">
+    {/* Floating Action Button - Navigation (mobile uniquement) */}
+    <button id="nav-drawer-fab" class="nav-drawer-fab" aria-label="Ouvrir la navigation">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+
+    {/* Drawer de navigation */}
+    <div id="nav-drawer" class="nav-drawer">
+      {/* Overlay (mobile uniquement) */}
+      <div id="nav-drawer-overlay" class="nav-drawer-overlay"></div>
+
+      {/* Drawer content */}
+      <div class="nav-drawer-content">
+        {/* Logo (desktop uniquement) */}
+        <div class="nav-drawer-logo">
+          <a href="/" class="nav-drawer-logo-link">
+            <img src="/LogoApp.webp" alt="Casque En Mains" class="nav-drawer-logo-img" />
+            <div class="nav-drawer-logo-text">
+              <span class="nav-drawer-logo-name">Casque En</span>
+              <span class="nav-drawer-logo-name-accent">Mains</span>
+            </div>
+          </a>
+        </div>
+
+        {/* Header */}
+        <div class="nav-drawer-header">
+          <h2>Navigation</h2>
+          <button id="nav-drawer-close" class="nav-drawer-close" aria-label="Fermer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Section Navigation rapide */}
+        {(prevChapter || nextChapter) && (
+          <div class="nav-drawer-section">
+            <h3 class="nav-drawer-section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+              Navigation rapide
+            </h3>
+            <div class="nav-drawer-quick-nav">
+              {prevChapter && (
+                <a href={`/mementos/${slug}/${prevChapter.chapter_number}`} class="nav-quick-btn nav-quick-prev">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                  <div class="nav-quick-text">
+                    <span class="nav-quick-label">Précédent</span>
+                    <span class="nav-quick-title">{prevChapter.chapter_number} - {prevChapter.chapter_title}</span>
+                  </div>
+                </a>
+              )}
+              {nextChapter && (
+                <a href={`/mementos/${slug}/${nextChapter.chapter_number}`} class="nav-quick-btn nav-quick-next">
+                  <div class="nav-quick-text">
+                    <span class="nav-quick-label">Suivant</span>
+                    <span class="nav-quick-title">{nextChapter.chapter_number} - {nextChapter.chapter_title}</span>
+                  </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Section Tous les chapitres */}
+        <div class="nav-drawer-section">
+          <h3 class="nav-drawer-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+            Tous les chapitres
+          </h3>
+          <div class="nav-drawer-chapters">
+            {allChapters?.map((ch) => (
+              <a
+                href={`/mementos/${slug}/${ch.chapter_number}`}
+                class={`nav-drawer-chapter ${String(ch.chapter_number) === id ? 'active' : ''}`}
+              >
+                <div class="nav-drawer-chapter-number">{ch.chapter_number}</div>
+                <div class="nav-drawer-chapter-title">{ch.chapter_title}</div>
+                {String(ch.chapter_number) === id && (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-drawer-chapter-check">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                )}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="synthese-content">
+      {/* Back Button */}
+      <a href={`/mementos/${slug}`} class="synthese-back-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Retour
+      </a>
+
+      {/* Header */}
+      <div class="synthese-header">
+        <h1 class="synthese-title">{chapter.memento_title}</h1>
+        <p class="synthese-subtitle">{chapter.chapter_number} - {chapter.chapter_title}{readingTime > 0 ? ` • ~${readingTime} min` : ''}</p>
+      </div>
+
+      {/* CTA vers l'app pour quiz et annotations */}
+      <div class="synthese-app-cta">
+        <div class="synthese-app-cta-content">
+          <div class="synthese-app-cta-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <div class="synthese-app-cta-info">
+            <h3>Testez vos connaissances</h3>
+            <p>Accédez aux quiz, surlignages et notes personnelles sur l'application</p>
+          </div>
+        </div>
+        <a href="https://app.casqueenmains.fr" class="synthese-app-cta-button">
+          Ouvrir l'application
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      {/* Barre de recherche améliorée */}
+      <div class="search-bar" id="search-bar">
+        <div class="search-bar-container">
+          {/* Sélecteur de portée */}
+          <div class="search-scope-selector">
+            <label class="search-scope-option active" data-scope="chapter">
+              <input type="radio" name="search-scope" value="chapter" checked />
+              <span>Ce chapitre</span>
+            </label>
+            <label class="search-scope-option" data-scope="memento">
+              <input type="radio" name="search-scope" value="memento" />
+              <span>Tout le mémento</span>
+            </label>
+          </div>
+
+          {/* Ligne de recherche (input + résultats) */}
+          <div class="search-input-row">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input
+                type="text"
+                id="chapter-search-input"
+                placeholder="Rechercher dans ce chapitre..."
+                class="search-input"
+              />
+              <button id="search-clear-btn" class="search-clear-btn" title="Effacer" style="display: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Résultats et navigation */}
+            <div id="search-results-info" class="search-results-info" style="display: none;">
+              <span class="search-counter" id="search-counter">0/0</span>
+              <div class="search-navigation">
+                <button id="search-prev-btn" class="search-nav-btn" title="Résultat précédent (Shift+Enter)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                  </svg>
+                </button>
+                <button id="search-next-btn" class="search-nav-btn" title="Résultat suivant (Enter)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div id="search-no-results" class="search-no-results" style="display: none;">
+              Aucun résultat
+            </div>
+          </div>
+        </div>
+
+        {/* Liste des résultats mémento groupés par chapitre */}
+        <div id="memento-search-results" class="memento-search-results" style="display: none;">
+          <div class="memento-search-header">
+            <span class="memento-search-count" id="memento-search-count"></span>
+          </div>
+          <div id="memento-search-chapters" class="memento-search-chapters"></div>
+        </div>
+      </div>
+
+      {/* Contenu markdown */}
+      <div class="synthese-markdown-wrapper">
+        <article id="chapter-content" class="synthese-markdown markdown-body" set:html={contentHtml} />
+      </div>
+
+      {/* Navigation Précédent/Suivant */}
+      {(prevChapter || nextChapter) && (
+        <div class="synthese-navigation-bottom">
+          {prevChapter ? (
+            <a href={`/mementos/${slug}/${prevChapter.chapter_number}`} class="synthese-nav-btn synthese-nav-prev">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+              <div class="synthese-nav-text">
+                <span class="synthese-nav-label">Précédent</span>
+                <span class="synthese-nav-title">{prevChapter.chapter_number}. {prevChapter.chapter_title}</span>
+              </div>
+            </a>
+          ) : <div></div>}
+
+          {nextChapter ? (
+            <a href={`/mementos/${slug}/${nextChapter.chapter_number}`} class="synthese-nav-btn synthese-nav-next">
+              <div class="synthese-nav-text">
+                <span class="synthese-nav-label">Suivant</span>
+                <span class="synthese-nav-title">{nextChapter.chapter_number}. {nextChapter.chapter_title}</span>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </a>
+          ) : <div></div>}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <style>
+    /* ============================================
+       SCROLLBAR STYLING
+       ============================================ */
+
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #DC2626 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Chrome, Edge, Safari */
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #EF4444, #F87171);
+    }
+
+    /* ============================================
+       HEADER POSITIONING
+       ============================================ */
+
+    /* En desktop, cacher tout le header car le logo est dans le drawer */
+    @media (min-width: 1024px) {
+      :global(header),
+      :global(body > header),
+      :global(html body header) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+    }
+
+    /* ============================================
+       CONTAINER
+       ============================================ */
+
+    .synthese-container {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #252545 100%);
+      padding-top: 80px;
+      padding-bottom: 4rem;
+    }
+
+    /* En desktop, pas de padding-top car pas de header */
+    @media (min-width: 1024px) {
+      .synthese-container {
+        padding-left: 280px;
+        padding-top: 0;
+      }
+    }
+
+    .synthese-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    @media (min-width: 1024px) {
+      .synthese-content {
+        margin-left: 0;
+        padding-left: 2rem;
+      }
+    }
+
+    /* Back Button */
+    .synthese-back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      margin-bottom: 2rem;
+    }
+
+    .synthese-back-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      transform: translateX(-4px);
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+
+    .synthese-header {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .synthese-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .synthese-chapter-badge {
+      display: inline-block;
+      padding: 0.375rem 0.875rem;
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      border-radius: 8px;
+      color: #EF4444;
+      font-weight: 600;
+    }
+
+    .synthese-reading-time {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .synthese-title {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: white;
+      margin: 0 0 0.75rem 0;
+      line-height: 1.2;
+    }
+
+    .synthese-subtitle {
+      font-size: 1.125rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+    }
+
+    /* ============================================
+       CTA VERS L'APP
+       ============================================ */
+
+    .synthese-app-cta {
+      background: rgba(220, 38, 38, 0.1);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .synthese-app-cta-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .synthese-app-cta-icon {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      border-radius: 12px;
+      color: white;
+    }
+
+    .synthese-app-cta-info {
+      flex: 1;
+    }
+
+    .synthese-app-cta-info h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .synthese-app-cta-info p {
+      font-size: 0.9375rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .synthese-app-cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      justify-content: center;
+      padding: 0.875rem 1.75rem;
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      color: white;
+      font-weight: 600;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    .synthese-app-cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+    }
+
+    @media (min-width: 640px) {
+      .synthese-app-cta-button {
+        width: auto;
+      }
+    }
+
+    /* ============================================
+       SEARCH BAR - Style PWA
+       ============================================ */
+
+    /* Container principal */
+    .search-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .search-bar-container:has(.search-input:focus) {
+      border-color: rgba(220, 38, 38, 0.3);
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
+    }
+
+    /* Sélecteur de portée */
+    .search-scope-selector {
+      display: flex;
+      gap: 0.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-scope-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .search-scope-option input[type="radio"] {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    .search-scope-option input[type="radio"]:checked {
+      border-color: #DC2626;
+    }
+
+    .search-scope-option input[type="radio"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      background: #DC2626;
+      border-radius: 50%;
+    }
+
+    .search-scope-option:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .search-scope-option.active {
+      background: rgba(220, 38, 38, 0.15);
+      border-color: rgba(220, 38, 38, 0.4);
+      color: #DC2626;
+    }
+
+    /* Ligne de recherche (input + résultats) */
+    .search-input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .search-icon {
+      color: rgba(255, 255, 255, 0.5);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 400;
+      padding: 0.375rem 0;
+    }
+
+    .search-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .search-clear-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .search-clear-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    /* Résultats */
+    .search-results-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-left: 0.75rem;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-counter {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      white-space: nowrap;
+    }
+
+    .search-navigation {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .search-nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .search-nav-btn:hover:not(:disabled) {
+      background: rgba(220, 38, 38, 0.2);
+      border-color: rgba(220, 38, 38, 0.4);
+      color: #DC2626;
+    }
+
+    .search-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .search-no-results {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      padding-left: 0.75rem;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Résultats mémento groupés par chapitre */
+    .memento-search-results {
+      margin-top: 0.75rem;
+      padding: 1rem;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+
+    .memento-search-header {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .memento-search-count {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .memento-search-chapters {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .memento-search-chapter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .memento-search-chapter:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(220, 38, 38, 0.4);
+      transform: translateX(4px);
+    }
+
+    .memento-search-chapter.active {
+      background: rgba(220, 38, 38, 0.15);
+      border-color: rgba(220, 38, 38, 0.4);
+    }
+
+    .memento-search-chapter-info {
+      flex: 1;
+    }
+
+    .memento-search-chapter-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .memento-search-chapter-count {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      border-radius: 12px;
+      color: #EF4444;
+      white-space: nowrap;
+    }
+
+    /* Highlight des résultats de recherche */
+    :global(mark.search-highlight) {
+      background: rgba(251, 191, 36, 0.3);
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 0.15em;
+      transition: all 0.2s ease;
+    }
+
+    :global(mark.search-highlight.active) {
+      background: rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+    }
+
+    /* Responsive mobile */
+    @media (max-width: 768px) {
+      .search-bar-container {
+        padding: 0.625rem 0.875rem;
+      }
+
+      .search-scope-selector {
+        gap: 0.375rem;
+      }
+
+      .search-scope-option {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem;
+      }
+
+      .search-scope-option span {
+        display: none;
+      }
+
+      .search-scope-option[data-scope="chapter"]::after {
+        content: 'Chapitre';
+      }
+
+      .search-scope-option[data-scope="memento"]::after {
+        content: 'Mémento';
+      }
+
+      .search-input-row {
+        flex-wrap: wrap;
+      }
+
+      .search-input-wrapper {
+        min-width: 100%;
+      }
+
+      .search-results-info {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .search-input {
+        font-size: 0.875rem;
+      }
+    }
+
+    /* ============================================
+       MARKDOWN CONTENT
+       ============================================ */
+
+    .synthese-markdown-wrapper {
+      margin-bottom: 3rem;
+    }
+
+    .synthese-markdown {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.8;
+    }
+
+    @media (max-width: 640px) {
+      .synthese-markdown {
+        padding: 1.5rem;
+      }
+    }
+
+    /* Markdown styling - Match PWA design */
+    :global(.markdown-body) {
+      font-size: 1.05rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* Headings */
+    :global(.markdown-body h1) {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 3rem 0 2rem;
+      color: #fff;
+      border-bottom: 3px solid rgba(220, 38, 38, 0.4);
+      padding-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+      position: relative;
+    }
+
+    :global(.markdown-body h1::before) {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -3px;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #DC2626, #EF4444);
+    }
+
+    :global(.markdown-body h2) {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 2.5rem 0 1.25rem;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      padding-left: 1rem;
+      margin-left: -0.5rem;
+      border-left: 4px solid #DC2626;
+      letter-spacing: -0.01em;
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.15), transparent);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    :global(.markdown-body h2:hover) {
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.2), transparent);
+      transform: translateX(2px);
+    }
+
+    :global(.markdown-body h3) {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem;
+      color: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    :global(.markdown-body h3::before) {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #DC2626;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Paragraphs */
+    :global(.markdown-body p) {
+      margin: 1.25rem 0;
+      color: rgba(255, 255, 255, 0.87);
+      max-width: 75ch;
+    }
+
+    :global(.markdown-body p + p) {
+      margin-top: 1.5rem;
+    }
+
+    /* Lists */
+    :global(.markdown-body ul),
+    :global(.markdown-body ol) {
+      margin: 1.5rem 0;
+      padding-left: 2rem;
+    }
+
+    :global(.markdown-body li) {
+      margin: 0.75rem 0;
+      color: rgba(255, 255, 255, 0.87);
+      line-height: 1.7;
+    }
+
+    :global(.markdown-body li ul),
+    :global(.markdown-body li ol) {
+      margin-top: 0.75rem;
+      margin-bottom: 0.5rem;
+      padding-left: 1.5rem;
+    }
+
+    /* Tables */
+    :global(.markdown-body table) {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    :global(.markdown-body thead) {
+      background: rgba(220, 38, 38, 0.15);
+    }
+
+    :global(.markdown-body th) {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #fff;
+      border-bottom: 2px solid rgba(220, 38, 38, 0.3);
+      white-space: nowrap;
+    }
+
+    :global(.markdown-body td) {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    :global(.markdown-body tbody tr) {
+      transition: background 0.2s ease;
+    }
+
+    :global(.markdown-body tbody tr:hover) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Code */
+    :global(.markdown-body code) {
+      background: rgba(220, 38, 38, 0.15);
+      color: #fff;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    :global(.markdown-body pre) {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+
+    :global(.markdown-body pre code) {
+      background: none;
+      padding: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Links */
+    :global(.markdown-body a) {
+      color: #DC2626;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(220, 38, 38, 0.3);
+      transition: all 0.2s ease;
+      border-radius: 2px;
+    }
+
+    :global(.markdown-body a:hover) {
+      color: #EF4444;
+      border-bottom-color: #DC2626;
+    }
+
+    :global(.markdown-body a:focus) {
+      outline: 2px solid #DC2626;
+      outline-offset: 2px;
+      background: rgba(220, 38, 38, 0.1);
+    }
+
+    /* Strong/Em */
+    :global(.markdown-body strong) {
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(180deg, transparent 60%, rgba(220, 38, 38, 0.15) 60%);
+      padding: 0 0.15em;
+    }
+
+    :global(.markdown-body em) {
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Blockquotes */
+    :global(.markdown-body blockquote) {
+      margin: 2rem 0;
+      padding: 1.25rem 1.5rem;
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 4px solid #3B82F6;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    :global(.markdown-body blockquote::before) {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.05), transparent 50%);
+      pointer-events: none;
+      border-radius: 8px;
+    }
+
+    :global(.markdown-body blockquote p) {
+      margin: 0.5rem 0;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    :global(.markdown-body blockquote p:first-child) {
+      margin-top: 0;
+    }
+
+    :global(.markdown-body blockquote p:last-child) {
+      margin-bottom: 0;
+    }
+
+    /* Horizontal rule */
+    :global(.markdown-body hr) {
+      margin: 3rem 0;
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      :global(.markdown-body) {
+        font-size: 1rem;
+      }
+
+      :global(.markdown-body h1) {
+        font-size: 1.5rem;
+        margin: 1.5rem 0 1rem;
+      }
+
+      :global(.markdown-body h2) {
+        font-size: 1.25rem;
+        margin: 1.5rem 0 0.75rem;
+      }
+
+      :global(.markdown-body h3) {
+        font-size: 1.1rem;
+        margin: 1.25rem 0 0.75rem;
+      }
+
+      :global(.markdown-body hr) {
+        margin: 2rem 0;
+      }
+
+      :global(.markdown-body blockquote) {
+        padding: 1rem 1.25rem;
+        margin: 1.5rem 0;
+      }
+
+      :global(.markdown-body table) {
+        font-size: 0.85rem;
+      }
+
+      :global(.markdown-body th),
+      :global(.markdown-body td) {
+        padding: 0.5rem 0.75rem;
+      }
+
+      :global(.markdown-body ul),
+      :global(.markdown-body ol) {
+        padding-left: 1.5rem;
+      }
+    }
+
+    /* ============================================
+       NAVIGATION
+       ============================================ */
+
+    .synthese-navigation-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 4rem;
+    }
+
+    @media (max-width: 640px) {
+      .synthese-navigation-bottom {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .synthese-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .synthese-nav-btn:hover {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: rgba(220, 38, 38, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .synthese-nav-prev {
+      justify-content: flex-start;
+    }
+
+    .synthese-nav-next {
+      justify-content: flex-end;
+      text-align: right;
+      grid-column: 2;
+    }
+
+    @media (max-width: 640px) {
+      .synthese-nav-next {
+        grid-column: 1;
+      }
+    }
+
+    .synthese-nav-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    .synthese-nav-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .synthese-nav-title {
+      font-size: 0.875rem;
+      color: white;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .synthese-nav-btn svg {
+      flex-shrink: 0;
+      color: #EF4444;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+
+    @media (max-width: 640px) {
+      .synthese-content {
+        padding: 1.5rem 1rem;
+      }
+
+      .synthese-header {
+        margin-bottom: 2rem;
+      }
+
+      .synthese-app-cta {
+        padding: 1.25rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .synthese-content {
+        padding: 3rem 2rem;
+      }
+    }
+
+    /* ============================================
+       NAVIGATION DRAWER
+       ============================================ */
+
+    /* FAB - Floating Action Button */
+    .nav-drawer-fab {
+      position: fixed;
+      bottom: 5rem;
+      right: 1rem;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.95), rgba(239, 68, 68, 0.95));
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      color: white;
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+      cursor: pointer;
+      z-index: 95;
+      transition: all 0.3s ease;
+    }
+
+    .nav-drawer-fab:hover {
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+      transform: translateY(-2px) scale(1.1);
+    }
+
+    /* Sur desktop, cacher le FAB */
+    @media (min-width: 1024px) {
+      .nav-drawer-fab {
+        display: none;
+      }
+    }
+
+    /* Overlay */
+    .nav-drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 39;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .nav-drawer.open .nav-drawer-overlay {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Sur desktop, cacher l'overlay */
+    @media (min-width: 1024px) {
+      .nav-drawer-overlay {
+        display: none;
+      }
+    }
+
+    /* Drawer content */
+    .nav-drawer-content {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 280px;
+      max-width: 85vw;
+      background: linear-gradient(135deg, #1a1a2e 0%, #252545 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding-top: 0;
+    }
+
+    .nav-drawer.open .nav-drawer-content {
+      transform: translateX(0);
+    }
+
+    /* Sur desktop, toujours visible */
+    @media (min-width: 1024px) {
+      .nav-drawer-content {
+        top: 0;
+        height: 100vh;
+        transform: translateX(0);
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+        border-right: none;
+      }
+    }
+
+    /* Logo du drawer (desktop uniquement) */
+    .nav-drawer-logo {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-drawer-logo-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-drawer-logo-link:hover {
+      transform: translateX(4px);
+    }
+
+    .nav-drawer-logo-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    .nav-drawer-logo-text {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      line-height: 1;
+    }
+
+    .nav-drawer-logo-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .nav-drawer-logo-name-accent {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #DC2626;
+    }
+
+    /* Header du drawer */
+    .nav-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-drawer-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .nav-drawer-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-drawer-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    /* Sur desktop, cacher le bouton fermer */
+    @media (min-width: 1024px) {
+      .nav-drawer-close {
+        display: none;
+      }
+    }
+
+    /* Sections du drawer */
+    .nav-drawer-section {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-drawer-section:last-child {
+      border-bottom: none;
+    }
+
+    .nav-drawer-section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Navigation rapide */
+    .nav-drawer-quick-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-quick-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .nav-quick-btn:hover {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: rgba(220, 38, 38, 0.3);
+      transform: translateX(4px);
+    }
+
+    .nav-quick-btn svg {
+      flex-shrink: 0;
+      color: #EF4444;
+    }
+
+    .nav-quick-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .nav-quick-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-quick-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* Liste des chapitres */
+    .nav-drawer-chapters {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow-y: auto;
+    }
+
+    .nav-drawer-chapter {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .nav-drawer-chapter:hover {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: rgba(220, 38, 38, 0.3);
+      transform: translateX(4px);
+    }
+
+    .nav-drawer-chapter.active {
+      background: rgba(220, 38, 38, 0.2);
+      border-color: rgba(220, 38, 38, 0.5);
+    }
+
+    .nav-drawer-chapter-number {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(220, 38, 38, 0.2);
+      border: 2px solid rgba(220, 38, 38, 0.4);
+      border-radius: 8px;
+      color: #EF4444;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .nav-drawer-chapter.active .nav-drawer-chapter-number {
+      background: rgba(220, 38, 38, 0.4);
+      border-color: #EF4444;
+    }
+
+    .nav-drawer-chapter-title {
+      flex: 1;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.4;
+    }
+
+    .nav-drawer-chapter.active .nav-drawer-chapter-title {
+      color: white;
+      font-weight: 600;
+    }
+
+    .nav-drawer-chapter-check {
+      flex-shrink: 0;
+      color: #EF4444;
+    }
+  </style>
+
+  <script>
+    // Gestion du drawer de navigation (mobile uniquement)
+    const drawer = document.getElementById('nav-drawer');
+    const fab = document.getElementById('nav-drawer-fab');
+    const overlay = document.getElementById('nav-drawer-overlay');
+    const closeBtn = document.getElementById('nav-drawer-close');
+
+    function openDrawer() {
+      drawer?.classList.add('open');
+    }
+
+    function closeDrawer() {
+      drawer?.classList.remove('open');
+    }
+
+    fab?.addEventListener('click', openDrawer);
+    overlay?.addEventListener('click', closeDrawer);
+    closeBtn?.addEventListener('click', closeDrawer);
+
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drawer?.classList.contains('open')) {
+        closeDrawer();
+      }
+    });
+
+    // ============================================
+    // Système de recherche amélioré (type PWA)
+    // ============================================
+
+    const searchInput = document.getElementById('chapter-search-input') as HTMLInputElement;
+    const searchCounter = document.getElementById('search-counter');
+    const searchResultsInfo = document.getElementById('search-results-info');
+    const searchNoResults = document.getElementById('search-no-results');
+    const searchClearBtn = document.getElementById('search-clear-btn');
+    const searchPrevBtn = document.getElementById('search-prev-btn');
+    const searchNextBtn = document.getElementById('search-next-btn');
+    const chapterContent = document.getElementById('chapter-content');
+    const mementoSearchResults = document.getElementById('memento-search-results');
+    const mementoSearchCount = document.getElementById('memento-search-count');
+    const mementoSearchChapters = document.getElementById('memento-search-chapters');
+    const scopeOptions = document.querySelectorAll('.search-scope-option');
+
+    let currentScope: 'chapter' | 'memento' = 'chapter';
+    let searchQuery = '';
+    let chapterMatches: { index: number; element: HTMLElement }[] = [];
+    let mementoMatches: { chapterId: string; chapterTitle: string; chapterNumber: number; count: number }[] = [];
+    let currentIndex = 0;
+    let originalContent = '';
+    let debounceTimer: NodeJS.Timeout | null = null;
+
+    if (chapterContent) {
+      // Sauvegarder le contenu original
+      originalContent = chapterContent.innerHTML;
+    }
+
+    // Échapper les caractères regex
+    function escapeRegex(str: string): string {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Effectuer la recherche dans le chapitre
+    async function searchInChapter(query: string) {
+      if (!chapterContent) return;
+
+      // Restaurer le contenu original
+      chapterContent.innerHTML = originalContent;
+      chapterMatches = [];
+
+      if (!query || query.length < 2) {
+        updateUI();
+        return;
+      }
+
+      // Recherche insensible à la casse avec <mark>
+      const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+      let matchIndex = 0;
+
+      // Fonction récursive pour parcourir et highlight les nœuds texte
+      function highlightText(node: Node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent || '';
+          if (regex.test(text)) {
+            const span = document.createElement('span');
+            // Remplacer chaque match par <mark> avec ID unique
+            span.innerHTML = text.replace(regex, (match) => {
+              const id = `search-result-${matchIndex}`;
+              const mark = `<mark class="search-highlight" id="${id}">${match}</mark>`;
+              matchIndex++;
+              return mark;
+            });
+            node.parentNode?.replaceChild(span, node);
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          // Ne pas modifier les éléments code ou pre
+          const element = node as HTMLElement;
+          if (element.tagName !== 'CODE' && element.tagName !== 'PRE') {
+            Array.from(node.childNodes).forEach(highlightText);
+          }
+        }
+      }
+
+      highlightText(chapterContent);
+
+      // Récupérer tous les <mark> créés
+      const marks = chapterContent.querySelectorAll('mark.search-highlight');
+      chapterMatches = Array.from(marks).map((mark, idx) => ({
+        index: idx,
+        element: mark as HTMLElement,
+      }));
+
+      currentIndex = 0;
+      updateUI();
+      navigateToResult(0);
+    }
+
+    // Effectuer la recherche dans tout le mémento
+    async function searchInMemento(query: string) {
+      mementoMatches = [];
+
+      if (!query || query.length < 2) {
+        updateUI();
+        return;
+      }
+
+      try {
+        // Récupérer tous les chapitres du mémento depuis Supabase
+        const response = await fetch(`/api/search-memento.json?slug=${slug}&query=` + encodeURIComponent(query));
+
+        if (!response.ok) {
+          console.error('Erreur lors de la recherche mémento');
+          // Fallback: chercher localement dans le chapitre actuel
+          await searchInChapter(query);
+          return;
+        }
+
+        const data = await response.json();
+        mementoMatches = data.results || [];
+        updateUI();
+      } catch (error) {
+        console.error('Erreur de recherche mémento:', error);
+        // Fallback: chercher localement
+        await searchInChapter(query);
+      }
+    }
+
+    // Mettre à jour l'UI selon l'état de la recherche
+    function updateUI() {
+      const hasQuery = searchQuery.length >= 2;
+
+      // Afficher/masquer le bouton clear
+      if (searchClearBtn) {
+        searchClearBtn.style.display = searchQuery ? 'flex' : 'none';
+      }
+
+      if (currentScope === 'chapter') {
+        // Mode chapitre
+        const hasResults = chapterMatches.length > 0;
+
+        if (searchResultsInfo && searchCounter && searchNoResults) {
+          searchResultsInfo.style.display = hasQuery && hasResults ? 'flex' : 'none';
+          searchNoResults.style.display = hasQuery && !hasResults ? 'block' : 'none';
+
+          if (hasResults) {
+            searchCounter.textContent = `${currentIndex + 1}/${chapterMatches.length}`;
+          }
+        }
+
+        if (mementoSearchResults) {
+          mementoSearchResults.style.display = 'none';
+        }
+
+        // Activer/désactiver les boutons de navigation
+        if (searchPrevBtn && searchNextBtn) {
+          searchPrevBtn.disabled = !hasResults;
+          searchNextBtn.disabled = !hasResults;
+        }
+      } else {
+        // Mode mémento
+        const hasResults = mementoMatches.length > 0;
+
+        if (searchResultsInfo) {
+          searchResultsInfo.style.display = 'none';
+        }
+
+        if (searchNoResults) {
+          searchNoResults.style.display = hasQuery && !hasResults ? 'block' : 'none';
+        }
+
+        if (mementoSearchResults && mementoSearchCount && mementoSearchChapters) {
+          mementoSearchResults.style.display = hasQuery && hasResults ? 'block' : 'none';
+
+          if (hasResults) {
+            const totalMatches = mementoMatches.reduce((sum, ch) => sum + ch.count, 0);
+            mementoSearchCount.textContent = `${totalMatches} résultat${totalMatches > 1 ? 's' : ''} dans ${mementoMatches.length} chapitre${mementoMatches.length > 1 ? 's' : ''}`;
+
+            // Générer la liste des chapitres
+            const currentChapterId = `${id}`;
+            const currentSlug = `${slug}`;
+
+            mementoSearchChapters.innerHTML = mementoMatches
+              .map((chapter) => {
+                const isActive = String(chapter.chapterNumber) === currentChapterId;
+
+                return `
+                  <a
+                    href="/mementos/${currentSlug}/${chapter.chapterNumber}"
+                    class="memento-search-chapter ${isActive ? 'active' : ''}"
+                  >
+                    <div class="memento-search-chapter-info">
+                      <span class="memento-search-chapter-title">Ch. ${chapter.chapterNumber} - ${chapter.chapterTitle}</span>
+                    </div>
+                    <span class="memento-search-chapter-count">${chapter.count} résultat${chapter.count > 1 ? 's' : ''}</span>
+                  </a>
+                `;
+              })
+              .join('');
+          }
+        }
+      }
+    }
+
+    // Naviguer vers un résultat spécifique
+    function navigateToResult(index: number) {
+      if (chapterMatches.length === 0) return;
+
+      // Retirer la classe active de l'ancien résultat
+      chapterMatches.forEach((match) => {
+        match.element.classList.remove('active');
+      });
+
+      // Ajouter la classe active au nouveau résultat
+      currentIndex = index;
+      const currentMatch = chapterMatches[currentIndex];
+      currentMatch.element.classList.add('active');
+
+      // Scroll vers le résultat
+      currentMatch.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Mettre à jour le compteur
+      if (searchCounter) {
+        searchCounter.textContent = `${currentIndex + 1}/${chapterMatches.length}`;
+      }
+    }
+
+    // Naviguer vers le résultat suivant
+    function navigateNext() {
+      if (chapterMatches.length === 0) return;
+      const nextIndex = (currentIndex + 1) % chapterMatches.length;
+      navigateToResult(nextIndex);
+    }
+
+    // Naviguer vers le résultat précédent
+    function navigatePrev() {
+      if (chapterMatches.length === 0) return;
+      const prevIndex = (currentIndex - 1 + chapterMatches.length) % chapterMatches.length;
+      navigateToResult(prevIndex);
+    }
+
+    // Effacer la recherche
+    function clearSearch() {
+      searchQuery = '';
+      if (searchInput) searchInput.value = '';
+
+      if (chapterContent) {
+        chapterContent.innerHTML = originalContent;
+      }
+
+      chapterMatches = [];
+      mementoMatches = [];
+      currentIndex = 0;
+      updateUI();
+    }
+
+    // Effectuer la recherche (avec debounce)
+    function performSearch(query: string) {
+      if (debounceTimer) clearTimeout(debounceTimer);
+
+      debounceTimer = setTimeout(() => {
+        searchQuery = query;
+
+        if (currentScope === 'chapter') {
+          searchInChapter(query);
+        } else {
+          searchInMemento(query);
+        }
+      }, 300);
+    }
+
+    // Changer le scope de recherche
+    function changeScope(newScope: 'chapter' | 'memento') {
+      currentScope = newScope;
+
+      // Mettre à jour les styles des boutons radio
+      scopeOptions.forEach((option) => {
+        const label = option as HTMLLabelElement;
+        const radio = label.querySelector('input[type="radio"]') as HTMLInputElement;
+
+        if (radio.value === newScope) {
+          label.classList.add('active');
+          radio.checked = true;
+        } else {
+          label.classList.remove('active');
+          radio.checked = false;
+        }
+      });
+
+      // Mettre à jour le placeholder
+      if (searchInput) {
+        searchInput.placeholder = newScope === 'chapter'
+          ? 'Rechercher dans ce chapitre...'
+          : 'Rechercher dans tout le mémento...';
+      }
+
+      // Refaire la recherche avec le nouveau scope
+      if (searchQuery) {
+        performSearch(searchQuery);
+      } else {
+        updateUI();
+      }
+    }
+
+    // Event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = (e.target as HTMLInputElement).value.trim();
+        performSearch(query);
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && currentScope === 'chapter') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            navigatePrev();
+          } else {
+            navigateNext();
+          }
+        } else if (e.key === 'Escape') {
+          clearSearch();
+        }
+      });
+    }
+
+    if (searchClearBtn) {
+      searchClearBtn.addEventListener('click', clearSearch);
+    }
+
+    if (searchPrevBtn) {
+      searchPrevBtn.addEventListener('click', navigatePrev);
+    }
+
+    if (searchNextBtn) {
+      searchNextBtn.addEventListener('click', navigateNext);
+    }
+
+    // Gérer les changements de scope
+    scopeOptions.forEach((option) => {
+      option.addEventListener('click', () => {
+        const label = option as HTMLLabelElement;
+        const radio = label.querySelector('input[type="radio"]') as HTMLInputElement;
+        changeScope(radio.value as 'chapter' | 'memento');
+      });
+    });
+  </script>
+</Layout>

@@ -2,20 +2,24 @@
 const navItems = [
     { name: "Accueil", href: "/" },
     { name: "Tarifs", href: "/tarifs" },
-    { name: "Mémento", href: "/memento" },
+    { name: "Mémentos", href: "/mementos" },
 ];
 ---
 
-<header class="fixed top-0 w-full z-50 transition-all duration-300 py-4">
+<header id="main-header" class="fixed top-0 w-full z-50 transition-all duration-300 py-4">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center">
             <!-- Logo -->
             <div class="shrink-0 flex items-center">
-                <a
-                    href="/"
-                    class="text-2xl font-bold tracking-tight text-white"
-                >
-                    Casque en <span class="text-accent">mains</span>
+                <a href="/" class="flex items-center gap-3 group">
+                    <img
+                        src="/LogoApp.webp"
+                        alt="Casque En Mains"
+                        class="h-10 w-10 transition-transform duration-200 group-hover:scale-110"
+                    />
+                    <span class="text-xl font-bold tracking-tight text-white hidden sm:inline">
+                        Casque En <span class="text-accent">Mains</span>
+                    </span>
                 </a>
             </div>
 
@@ -98,10 +102,23 @@ const navItems = [
     </div>
 </header>
 
+<style>
+    /* Header scrolled state - tous les écrans */
+    #main-header.scrolled {
+        background: linear-gradient(135deg, rgba(11, 17, 33, 0.95), rgba(21, 30, 50, 0.95));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+</style>
+
 <script>
     const btn = document.getElementById("mobile-menu-button");
     const menu = document.getElementById("mobile-menu");
+    const header = document.getElementById("main-header");
 
+    // Mobile menu toggle
     if (btn && menu) {
         btn.addEventListener("click", () => {
             const isHidden = menu.classList.contains("hidden");
@@ -122,5 +139,27 @@ const navItems = [
                 }, 200);
             }
         });
+    }
+
+    // Scroll effect - tous les écrans
+    if (header) {
+        let lastScroll = 0;
+
+        window.addEventListener("scroll", () => {
+            const currentScroll = window.scrollY;
+
+            if (currentScroll > 50) {
+                header.classList.add("scrolled");
+            } else {
+                header.classList.remove("scrolled");
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // Check au chargement
+        if (window.scrollY > 50) {
+            header.classList.add("scrolled");
+        }
     }
 </script>
