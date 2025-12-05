@@ -2,6 +2,7 @@
 import Layout from '../../../layouts/Layout.astro';
 import { supabase } from '../../../lib/supabase';
 import { marked } from 'marked';
+import PodcastSection from '../../../components/PodcastSection.astro';
 
 export async function getStaticPaths() {
   const { data: chapters } = await supabase
@@ -32,6 +33,14 @@ const { data: allChapters } = await supabase
   .from('memento_contents')
   .select('id, chapter_number, chapter_title, sort_order')
   .eq('memento_slug', slug)
+  .order('sort_order', { ascending: true });
+
+// Récupérer les podcasts du chapitre
+const { data: podcasts } = await supabase
+  .from('memento_podcasts')
+  .select('id, title, description, audio_url, cover_url, duration_seconds, sort_order')
+  .eq('memento_slug', slug)
+  .eq('chapter_number', id)
   .order('sort_order', { ascending: true });
 
 if (!chapter) {
@@ -196,6 +205,9 @@ const readingTime = Math.ceil(wordCount / 200);
           </svg>
         </a>
       </div>
+
+      {/* Section Podcasts */}
+      <PodcastSection podcasts={podcasts || []} />
 
       {/* Barre de recherche améliorée */}
       <div class="search-bar" id="search-bar">

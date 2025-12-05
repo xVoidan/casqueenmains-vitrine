@@ -1,0 +1,270 @@
+---
+import PodcastCard from './PodcastCard.astro';
+
+interface Podcast {
+  id: string;
+  title: string;
+  description: string | null;
+  audio_url: string;
+  cover_url: string | null;
+  duration_seconds: number;
+  sort_order: number;
+}
+
+interface Props {
+  podcasts: Podcast[];
+}
+
+const { podcasts } = Astro.props;
+---
+
+{podcasts.length > 0 && (
+  <section class="podcasts-section">
+    <div class="podcasts-header">
+      <div class="podcasts-header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </div>
+      <div class="podcasts-header-text">
+        <h3>Podcasts du chapitre</h3>
+        <p>{podcasts.length} {podcasts.length > 1 ? 'épisodes disponibles' : 'épisode disponible'}</p>
+      </div>
+    </div>
+
+    <div class="podcasts-grid">
+      {podcasts.map((podcast) => (
+        <PodcastCard
+          id={podcast.id}
+          title={podcast.title}
+          description={podcast.description}
+          audioUrl={podcast.audio_url}
+          coverUrl={podcast.cover_url}
+          durationSeconds={podcast.duration_seconds}
+        />
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .podcasts-section {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: rgba(220, 38, 38, 0.05);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 20px;
+  }
+
+  .podcasts-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .podcasts-header-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #DC2626, #EF4444);
+    border-radius: 12px;
+    color: white;
+  }
+
+  .podcasts-header-text h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .podcasts-header-text p {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+
+  .podcasts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .podcasts-section {
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .podcasts-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .podcasts-header-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .podcasts-header-text h3 {
+      font-size: 1.125rem;
+    }
+  }
+</style>
+
+<script>
+  // Gestionnaire de lecture audio global
+  let currentlyPlayingCard: HTMLElement | null = null;
+  let currentAudio: HTMLAudioElement | null = null;
+  const speeds = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  let currentSpeedIndex = 2; // Index de 1x
+
+  // Formater le temps en mm:ss
+  function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  }
+
+  // Arrêter la lecture actuelle
+  function stopCurrentPlayback() {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    if (currentlyPlayingCard) {
+      currentlyPlayingCard.classList.remove('playing');
+      const player = currentlyPlayingCard.querySelector('.podcast-player') as HTMLElement;
+      if (player) player.style.display = 'none';
+    }
+    currentlyPlayingCard = null;
+    currentAudio = null;
+  }
+
+  // Initialiser les cartes podcast
+  document.querySelectorAll('.podcast-card').forEach((card) => {
+    const cardElement = card as HTMLElement;
+    const playBtn = card.querySelector('.podcast-play-btn') as HTMLButtonElement;
+    const player = card.querySelector('.podcast-player') as HTMLElement;
+    const audio = card.querySelector('audio') as HTMLAudioElement;
+    const progressBar = card.querySelector('.progress-bar') as HTMLElement;
+    const progressFill = card.querySelector('.progress-fill') as HTMLElement;
+    const currentTimeEl = card.querySelector('.current-time') as HTMLElement;
+    const playPauseBtn = card.querySelector('.player-btn.play-pause') as HTMLButtonElement;
+    const rewindBtn = card.querySelector('.player-btn.rewind') as HTMLButtonElement;
+    const forwardBtn = card.querySelector('.player-btn.forward') as HTMLButtonElement;
+    const speedBtn = card.querySelector('.speed-btn') as HTMLButtonElement;
+
+    if (!audio || !playBtn || !player) return;
+
+    // Clic sur le bouton play de la cover
+    playBtn.addEventListener('click', () => {
+      if (currentlyPlayingCard === cardElement) {
+        // Toggle pause/play
+        if (audio.paused) {
+          audio.play();
+          cardElement.classList.add('playing');
+        } else {
+          audio.pause();
+          cardElement.classList.remove('playing');
+        }
+      } else {
+        // Arrêter la lecture précédente
+        stopCurrentPlayback();
+
+        // Démarrer la nouvelle lecture
+        currentlyPlayingCard = cardElement;
+        currentAudio = audio;
+        player.style.display = 'block';
+        cardElement.classList.add('playing');
+        audio.play();
+      }
+    });
+
+    // Clic sur play/pause dans le player
+    if (playPauseBtn) {
+      playPauseBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.play();
+          cardElement.classList.add('playing');
+        } else {
+          audio.pause();
+          cardElement.classList.remove('playing');
+        }
+      });
+    }
+
+    // Rewind -10s
+    if (rewindBtn) {
+      rewindBtn.addEventListener('click', () => {
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+      });
+    }
+
+    // Forward +10s
+    if (forwardBtn) {
+      forwardBtn.addEventListener('click', () => {
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+      });
+    }
+
+    // Vitesse de lecture
+    if (speedBtn) {
+      speedBtn.addEventListener('click', () => {
+        currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+        const newSpeed = speeds[currentSpeedIndex];
+        audio.playbackRate = newSpeed;
+        speedBtn.textContent = `${newSpeed}x`;
+      });
+    }
+
+    // Mise à jour de la barre de progression
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = `${progress}%`;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+      }
+    });
+
+    // Clic sur la barre de progression pour seek
+    if (progressBar) {
+      progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = percent * audio.duration;
+      });
+    }
+
+    // Fin de lecture
+    audio.addEventListener('ended', () => {
+      cardElement.classList.remove('playing');
+      progressFill.style.width = '0%';
+      currentTimeEl.textContent = '0:00';
+    });
+
+    // Événement pause
+    audio.addEventListener('pause', () => {
+      if (currentlyPlayingCard === cardElement) {
+        cardElement.classList.remove('playing');
+      }
+    });
+
+    // Événement play
+    audio.addEventListener('play', () => {
+      cardElement.classList.add('playing');
+    });
+  });
+
+  // Arrêter la lecture quand on quitte la page
+  window.addEventListener('beforeunload', stopCurrentPlayback);
+</script>
