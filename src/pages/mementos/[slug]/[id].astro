@@ -35,10 +35,10 @@ const { data: allChapters } = await supabase
   .eq('memento_slug', slug)
   .order('sort_order', { ascending: true });
 
-// Récupérer les podcasts du chapitre
+// Récupérer les podcasts du chapitre (avec liens YouTube/Spotify)
 const { data: podcasts } = await supabase
   .from('memento_podcasts')
-  .select('id, title, description, audio_url, cover_url, duration_seconds, sort_order')
+  .select('id, title, description, duration_seconds, youtube_url, spotify_url, sort_order')
   .eq('memento_slug', slug)
   .eq('chapter_number', id)
   .order('sort_order', { ascending: true });
@@ -207,7 +207,7 @@ const readingTime = Math.ceil(wordCount / 200);
       </div>
 
       {/* Section Podcasts */}
-      <PodcastSection podcasts={podcasts || []} />
+      <PodcastSection hasPodcasts={(podcasts?.length ?? 0) > 0} />
 
       {/* Barre de recherche améliorée */}
       <div class="search-bar" id="search-bar">

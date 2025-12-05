@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabase';
+import PodcastSection from '../../components/PodcastSection.astro';
 
 export async function getStaticPaths() {
   const { data: mementos } = await supabase
@@ -28,6 +29,14 @@ const { data: chapters } = await supabase
   .select('id, chapter_number, chapter_title, sort_order')
   .eq('memento_slug', slug)
   .order('sort_order', { ascending: true });
+
+// Vérifier s'il y a des podcasts pour ce mémento
+const { count: podcastCount } = await supabase
+  .from('memento_podcasts')
+  .select('id', { count: 'exact', head: true })
+  .eq('memento_slug', slug);
+
+const hasPodcasts = (podcastCount ?? 0) > 0;
 
 if (!memento) {
   return Astro.redirect('/mementos');
@@ -153,6 +162,9 @@ const firstChapterNumber = chapters && chapters.length > 0 ? chapters[0].chapter
           </div>
         </div>
       </div>
+
+      <!-- Section Podcasts -->
+      <PodcastSection hasPodcasts={hasPodcasts} />
     </div>
   </div>
 
