@@ -1,0 +1,1035 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase';
+
+export async function getStaticPaths() {
+  const { data: documents } = await supabase
+    .from('pompier_documents')
+    .select('id')
+    .eq('status', 'completed')
+    .neq('doc_type', 'carte-connaissances');
+
+  return documents?.map((doc) => ({
+    params: { id: doc.id },
+  })) || [];
+}
+
+const { id } = Astro.params;
+
+// Récupérer les informations du document
+const { data: document } = await supabase
+  .from('pompier_documents')
+  .select('id, display_title, doc_type, page_count, cover_image_url, full_pdf_storage_path')
+  .eq('id', id)
+  .single();
+
+if (!document) {
+  return Astro.redirect('/referentiels');
+}
+
+// Construire l'URL du PDF
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const pdfUrl = document.full_pdf_storage_path
+  ? `${supabaseUrl}/storage/v1/object/public/pompier-documents/${document.full_pdf_storage_path}`
+  : null;
+
+// Fonction pour obtenir la couleur d'un type
+function getDocTypeColor(docType: string): string {
+  const colors: Record<string, string> = {
+    'GDO': '#3B82F6',
+    'GTO': '#DC2626',
+    'RT': '#8B5CF6',
+    'Rapport': '#F59E0B',
+  };
+  return colors[docType] || '#6B7280';
+}
+
+const typeColor = getDocTypeColor(document.doc_type);
+const appUrl = `https://app.casqueenmains.fr/referentiel/${id}`;
+
+// Fonctionnalités premium
+const premiumFeatures = [
+  {
+    id: 'search',
+    icon: 'search',
+    label: 'Rechercher',
+    description: 'Recherche plein texte dans le document'
+  },
+  {
+    id: 'highlight',
+    icon: 'highlight',
+    label: 'Surligner',
+    description: 'Surlignez les passages importants'
+  },
+  {
+    id: 'annotate',
+    icon: 'annotate',
+    label: 'Annoter',
+    description: 'Ajoutez vos notes personnelles'
+  },
+  {
+    id: 'bookmark',
+    icon: 'bookmark',
+    label: 'Favoris',
+    description: 'Marquez vos pages favorites'
+  },
+  {
+    id: 'audio',
+    icon: 'audio',
+    label: 'Écouter',
+    description: 'Lecture audio du document'
+  }
+];
+---
+
+<Layout title={`${document.display_title} - Casque En Mains`} description={`Consultez le document ${document.display_title}`}>
+  <div class="reader-container">
+    <!-- Header -->
+    <header class="reader-header">
+      <div class="reader-header-left">
+        <a href="/referentiels" class="reader-back-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Retour</span>
+        </a>
+        <div class="reader-title-section">
+          <span class="reader-type" style={`background-color: ${typeColor}20; color: ${typeColor}; border-color: ${typeColor}40`}>
+            {document.doc_type}
+          </span>
+          <h1 class="reader-title">{document.display_title}</h1>
+        </div>
+      </div>
+      <div class="reader-header-right">
+        {pdfUrl && (
+          <a href={pdfUrl} target="_blank" rel="noopener noreferrer" class="reader-download-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>PDF</span>
+          </a>
+        )}
+        <a href={appUrl} target="_blank" rel="noopener noreferrer" class="reader-app-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Ouvrir dans l'app</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Floating Premium Toolbar -->
+    <div class="premium-toolbar" id="premium-toolbar">
+      <div class="premium-toolbar-inner">
+        <!-- Search teaser -->
+        <button class="toolbar-btn" data-feature="search" aria-label="Rechercher dans le document">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <span class="toolbar-label">Rechercher</span>
+          <span class="toolbar-badge">Pro</span>
+        </button>
+
+        <!-- Highlight teaser -->
+        <button class="toolbar-btn" data-feature="highlight" aria-label="Surligner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m9 11-6 6v3h9l3-3"></path>
+            <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
+          </svg>
+          <span class="toolbar-label">Surligner</span>
+          <span class="toolbar-badge">Pro</span>
+        </button>
+
+        <!-- Annotate teaser -->
+        <button class="toolbar-btn" data-feature="annotate" aria-label="Annoter">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span class="toolbar-label">Annoter</span>
+          <span class="toolbar-badge">Pro</span>
+        </button>
+
+        <!-- Bookmark teaser -->
+        <button class="toolbar-btn" data-feature="bookmark" aria-label="Ajouter aux favoris">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+          </svg>
+          <span class="toolbar-label">Favoris</span>
+          <span class="toolbar-badge">Pro</span>
+        </button>
+
+        <!-- Audio teaser -->
+        <button class="toolbar-btn" data-feature="audio" aria-label="Écouter le document">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+          <span class="toolbar-label">Écouter</span>
+          <span class="toolbar-badge">Pro</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PDF Viewer -->
+    <div class="reader-content">
+      {pdfUrl ? (
+        <div class="reader-pdf-wrapper">
+          <iframe
+            src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+            class="reader-pdf-iframe"
+            title={document.display_title}
+          />
+        </div>
+      ) : (
+        <div class="reader-no-pdf">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          <p>PDF non disponible</p>
+          <a href="/referentiels" class="reader-back-link">Retour aux référentiels</a>
+        </div>
+      )}
+    </div>
+
+    <!-- Enhanced CTA Banner -->
+    <div class="reader-cta-banner">
+      <div class="reader-cta-content">
+        <div class="reader-cta-left">
+          <div class="reader-cta-text">
+            <h3>Débloquez toutes les fonctionnalités</h3>
+            <p>Recherche, surlignage, annotations, favoris et lecture audio</p>
+          </div>
+          <div class="reader-cta-features">
+            <div class="cta-feature">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <span>Recherche</span>
+            </div>
+            <div class="cta-feature">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m9 11-6 6v3h9l3-3"></path>
+                <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
+              </svg>
+              <span>Surlignage</span>
+            </div>
+            <div class="cta-feature">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Notes</span>
+            </div>
+            <div class="cta-feature">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+              </svg>
+              <span>Audio</span>
+            </div>
+          </div>
+        </div>
+        <a href={appUrl} target="_blank" rel="noopener noreferrer" class="reader-cta-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Ouvrir dans l'app
+        </a>
+      </div>
+    </div>
+
+    <!-- Premium Feature Modal -->
+    <div class="modal-overlay" id="feature-modal">
+      <div class="modal-content">
+        <button class="modal-close" id="modal-close" aria-label="Fermer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div class="modal-icon" id="modal-icon">
+          <!-- Icon will be inserted by JS -->
+        </div>
+
+        <h2 class="modal-title" id="modal-title">Fonctionnalité Premium</h2>
+        <p class="modal-description" id="modal-description">
+          Cette fonctionnalité est disponible dans l'application Casque En Mains.
+        </p>
+
+        <div class="modal-features">
+          <h4>Toutes les fonctionnalités Pro :</h4>
+          <ul>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Recherche plein texte dans tous les documents
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Surlignage avec couleurs personnalisées
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Notes et annotations sur chaque page
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Favoris et marque-pages synchronisés
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Lecture audio des documents (TTS)
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Synchronisation sur tous vos appareils
+            </li>
+          </ul>
+        </div>
+
+        <div class="modal-actions">
+          <a href={appUrl} target="_blank" rel="noopener noreferrer" class="modal-cta-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Ouvrir dans l'app
+          </a>
+          <a href="/tarifs" class="modal-cta-secondary">
+            Voir les tarifs
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .reader-container {
+      min-height: 100vh;
+      background: #0B1121;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .reader-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (min-width: 768px) {
+      .reader-header {
+        padding: 12px 16px;
+        gap: 16px;
+      }
+    }
+
+    .reader-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    @media (min-width: 768px) {
+      .reader-header-left {
+        gap: 16px;
+      }
+    }
+
+    .reader-back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 640px) {
+      .reader-back-btn {
+        padding: 8px 12px;
+      }
+    }
+
+    .reader-back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+    }
+
+    .reader-back-btn span {
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .reader-back-btn span {
+        display: inline;
+      }
+    }
+
+    .reader-title-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    @media (min-width: 768px) {
+      .reader-title-section {
+        gap: 12px;
+      }
+    }
+
+    .reader-type {
+      display: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 768px) {
+      .reader-type {
+        display: inline-block;
+      }
+    }
+
+    .reader-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (min-width: 768px) {
+      .reader-title {
+        font-size: 1.125rem;
+      }
+    }
+
+    .reader-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 640px) {
+      .reader-header-right {
+        gap: 8px;
+      }
+    }
+
+    .reader-download-btn,
+    .reader-app-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    @media (min-width: 640px) {
+      .reader-download-btn,
+      .reader-app-btn {
+        padding: 8px 12px;
+      }
+    }
+
+    .reader-download-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .reader-download-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+    }
+
+    .reader-app-btn {
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      color: #FFFFFF;
+      border: none;
+    }
+
+    .reader-app-btn:hover {
+      background: linear-gradient(135deg, #B91C1C, #DC2626);
+    }
+
+    .reader-download-btn span,
+    .reader-app-btn span {
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .reader-download-btn span,
+      .reader-app-btn span {
+        display: inline;
+      }
+    }
+
+    /* Premium Toolbar */
+    .premium-toolbar {
+      position: sticky;
+      top: 52px;
+      z-index: 90;
+      background: linear-gradient(135deg, rgba(37, 37, 69, 0.98), rgba(26, 26, 46, 0.98));
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .premium-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .premium-toolbar {
+        top: 56px;
+        padding: 10px 16px;
+      }
+    }
+
+    .premium-toolbar-inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+      .premium-toolbar-inner {
+        gap: 8px;
+        justify-content: center;
+      }
+    }
+
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .toolbar-btn:hover {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: rgba(220, 38, 38, 0.3);
+      color: #FFFFFF;
+    }
+
+    .toolbar-label {
+      display: none;
+    }
+
+    @media (min-width: 480px) {
+      .toolbar-label {
+        display: inline;
+      }
+    }
+
+    .toolbar-badge {
+      padding: 2px 6px;
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      border-radius: 4px;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content */
+    .reader-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reader-pdf-wrapper {
+      flex: 1;
+      min-height: calc(100vh - 220px);
+    }
+
+    @media (min-width: 768px) {
+      .reader-pdf-wrapper {
+        min-height: calc(100vh - 240px);
+      }
+    }
+
+    .reader-pdf-iframe {
+      width: 100%;
+      height: 100%;
+      min-height: calc(100vh - 220px);
+      border: none;
+      background: #FFFFFF;
+    }
+
+    @media (min-width: 768px) {
+      .reader-pdf-iframe {
+        min-height: calc(100vh - 240px);
+      }
+    }
+
+    .reader-no-pdf {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 48px 24px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .reader-no-pdf p {
+      margin: 0;
+      font-size: 1.125rem;
+    }
+
+    .reader-back-link {
+      color: #EF4444;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .reader-back-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Enhanced CTA Banner */
+    .reader-cta-banner {
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.98) 0%, rgba(185, 28, 28, 0.98) 100%);
+      backdrop-filter: blur(12px);
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .reader-cta-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .reader-cta-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .reader-cta-text h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin: 0;
+    }
+
+    @media (min-width: 640px) {
+      .reader-cta-text h3 {
+        font-size: 1rem;
+      }
+    }
+
+    .reader-cta-text p {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .reader-cta-text p {
+        display: block;
+      }
+    }
+
+    .reader-cta-features {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (min-width: 768px) {
+      .reader-cta-features {
+        display: flex;
+      }
+    }
+
+    .cta-feature {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #FFFFFF;
+    }
+
+    .cta-feature svg {
+      opacity: 0.9;
+    }
+
+    .reader-cta-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #FFFFFF;
+      border-radius: 8px;
+      color: #DC2626;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (min-width: 640px) {
+      .reader-cta-btn {
+        padding: 12px 20px;
+      }
+    }
+
+    .reader-cta-btn:hover {
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #151E32;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+    }
+
+    .modal-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.1));
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      border-radius: 16px;
+      color: #EF4444;
+    }
+
+    .modal-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      text-align: center;
+      margin: 0 0 8px 0;
+    }
+
+    .modal-description {
+      font-size: 0.9375rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+    }
+
+    .modal-features {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .modal-features h4 {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-features ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .modal-features li svg {
+      flex-shrink: 0;
+      color: #22C55E;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-cta-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      border-radius: 10px;
+      color: #FFFFFF;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    .modal-cta-primary:hover {
+      background: linear-gradient(135deg, #B91C1C, #DC2626);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+    }
+
+    .modal-cta-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .modal-cta-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #FFFFFF;
+    }
+  </style>
+
+  <script>
+    // Feature data
+    const featureData: Record<string, { title: string; description: string; icon: string }> = {
+      search: {
+        title: 'Recherche dans le document',
+        description: 'Trouvez instantanément n\'importe quel terme dans le document grâce à la recherche plein texte.',
+        icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>`
+      },
+      highlight: {
+        title: 'Surlignage intelligent',
+        description: 'Surlignez les passages importants avec différentes couleurs pour mieux mémoriser.',
+        icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h9l3-3"></path><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path></svg>`
+      },
+      annotate: {
+        title: 'Annotations personnelles',
+        description: 'Ajoutez vos propres notes et commentaires sur chaque page du document.',
+        icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`
+      },
+      bookmark: {
+        title: 'Favoris & Marque-pages',
+        description: 'Marquez vos pages favorites pour y accéder rapidement plus tard.',
+        icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>`
+      },
+      audio: {
+        title: 'Lecture audio',
+        description: 'Écoutez le document lu à voix haute grâce à la synthèse vocale.',
+        icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`
+      }
+    };
+
+    // Modal elements
+    const modal = document.getElementById('feature-modal');
+    const modalClose = document.getElementById('modal-close');
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDescription = document.getElementById('modal-description');
+    const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+
+    // Open modal with feature info
+    function openModal(featureId: string) {
+      const feature = featureData[featureId];
+      if (!feature || !modal || !modalIcon || !modalTitle || !modalDescription) return;
+
+      modalIcon.innerHTML = feature.icon;
+      modalTitle.textContent = feature.title;
+      modalDescription.textContent = feature.description;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close modal
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Event listeners
+    toolbarButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const featureId = btn.getAttribute('data-feature');
+        if (featureId) openModal(featureId);
+      });
+    });
+
+    modalClose?.addEventListener('click', closeModal);
+
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</Layout>

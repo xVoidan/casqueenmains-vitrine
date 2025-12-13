@@ -2,7 +2,8 @@
 const navItems = [
     { name: "Accueil", href: "/" },
     { name: "Tarifs", href: "/tarifs" },
-    { name: "Mémentos & Podcasts", href: "/mementos" },
+    { name: "Mémentos", href: "/mementos" },
+    { name: "Référentiels", href: "/referentiels" },
 ];
 ---
 
@@ -23,9 +24,9 @@ const navItems = [
                 </a>
             </div>
 
-            <!-- Desktop Menu (Floating Pill) -->
+            <!-- Desktop Menu (Floating Pill - no backdrop blur for performance) -->
             <nav
-                class="hidden md:flex items-center space-x-1 px-4 py-2 rounded-full glass border border-white/10 bg-white/5 backdrop-blur-md shadow-lg shadow-black/10"
+                class="hidden md:flex items-center space-x-1 px-4 py-2 rounded-full border border-white/10 bg-navy-800/90 shadow-lg shadow-black/10"
             >
                 {
                     navItems.map((item) => (
@@ -74,9 +75,9 @@ const navItems = [
         </div>
     </div>
 
-    <!-- Mobile Menu -->
+    <!-- Mobile Menu (no glass blur for performance) -->
     <div
-        class="md:hidden hidden absolute top-20 left-4 right-4 glass rounded-2xl border border-white/10 p-4 shadow-xl transform transition-all duration-200 origin-top"
+        class="md:hidden hidden absolute top-20 left-4 right-4 bg-navy-800/98 rounded-2xl border border-white/10 p-4 shadow-xl transform transition-all duration-200 origin-top"
         id="mobile-menu"
     >
         <div class="space-y-2">
@@ -103,11 +104,9 @@ const navItems = [
 </header>
 
 <style>
-    /* Header scrolled state - tous les écrans */
+    /* Header scrolled state - no blur for performance */
     #main-header.scrolled {
-        background: linear-gradient(135deg, rgba(11, 17, 33, 0.95), rgba(21, 30, 50, 0.95));
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: linear-gradient(135deg, rgba(11, 17, 33, 0.98), rgba(21, 30, 50, 0.98));
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }

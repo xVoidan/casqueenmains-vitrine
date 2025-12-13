@@ -70,12 +70,27 @@ const readingTime = Math.ceil(wordCount / 200);
 
 <Layout title={`${chapter.chapter_title} - ${chapter.memento_title} - Casque En Mains`}>
   <div class="synthese-container">
+    {/* Barre de progression de lecture */}
+    <div class="reading-progress-container">
+      <div class="reading-progress-bar" id="reading-progress-bar"></div>
+    </div>
+
     {/* Floating Action Button - Navigation (mobile uniquement) */}
     <button id="nav-drawer-fab" class="nav-drawer-fab" aria-label="Ouvrir la navigation">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M3 12h18M3 6h18M3 18h18"/>
       </svg>
     </button>
+
+    {/* Floating TTS Button - teaser premium */}
+    <a href="https://app.casqueenmains.fr" target="_blank" rel="noopener noreferrer" class="tts-fab" aria-label="Écouter le chapitre" title="Écouter le chapitre (Premium)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+      </svg>
+      <span class="tts-fab-badge">Pro</span>
+      <span class="tts-fab-time">~{readingTime} min</span>
+    </a>
 
     {/* Drawer de navigation */}
     <div id="nav-drawer" class="nav-drawer">
@@ -314,6 +329,86 @@ const readingTime = Math.ceil(wordCount / 200);
 
   <style>
     /* ============================================
+       READING PROGRESS BAR
+       ============================================ */
+
+    .reading-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 200;
+    }
+
+    .reading-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #DC2626, #EF4444);
+      transition: width 0.1s ease-out;
+      box-shadow: 0 0 8px rgba(220, 38, 38, 0.5);
+    }
+
+    /* ============================================
+       TTS FLOATING BUTTON
+       ============================================ */
+
+    .tts-fab {
+      position: fixed;
+      bottom: 5rem;
+      left: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(167, 139, 250, 0.95));
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 28px;
+      color: white;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+      cursor: pointer;
+      z-index: 95;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .tts-fab:hover {
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .tts-fab svg {
+      flex-shrink: 0;
+    }
+
+    .tts-fab-badge {
+      padding: 0.125rem 0.375rem;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tts-fab-time {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    /* Sur desktop, positionner différemment */
+    @media (min-width: 1024px) {
+      .tts-fab {
+        left: auto;
+        right: 2rem;
+        bottom: 2rem;
+      }
+    }
+
+    /* ============================================
        SCROLLBAR STYLING
        ============================================ */
 
@@ -370,7 +465,7 @@ const readingTime = Math.ceil(wordCount / 200);
 
     .synthese-container {
       min-height: 100vh;
-      background: linear-gradient(135deg, #1a1a2e 0%, #252545 100%);
+      background: #0B1121;
       padding-top: 80px;
       padding-bottom: 4rem;
     }
@@ -1368,7 +1463,7 @@ const readingTime = Math.ceil(wordCount / 200);
       height: 100vh;
       width: 280px;
       max-width: 85vw;
-      background: linear-gradient(135deg, #1a1a2e 0%, #252545 100%);
+      background: #0B1121;
       border-right: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
       z-index: 100;
@@ -1637,7 +1732,51 @@ const readingTime = Math.ceil(wordCount / 200);
   </style>
 
   <script>
+    // ============================================
+    // Barre de progression de lecture
+    // ============================================
+    const progressBar = document.getElementById('reading-progress-bar');
+    const markdownContent = document.getElementById('chapter-content');
+
+    function updateReadingProgress() {
+      if (!progressBar || !markdownContent) return;
+
+      const contentTop = markdownContent.offsetTop;
+      const contentHeight = markdownContent.offsetHeight;
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+
+      // Calculer le pourcentage de progression basé sur le contenu
+      const startReading = contentTop - windowHeight * 0.3;
+      const endReading = contentTop + contentHeight - windowHeight * 0.7;
+      const readingRange = endReading - startReading;
+
+      let progress = 0;
+      if (scrollTop >= startReading) {
+        progress = Math.min(100, Math.max(0, ((scrollTop - startReading) / readingRange) * 100));
+      }
+
+      progressBar.style.width = `${progress}%`;
+    }
+
+    // Écouter le scroll avec throttling pour les performances
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateReadingProgress();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // Initialiser au chargement
+    updateReadingProgress();
+
+    // ============================================
     // Gestion du drawer de navigation (mobile uniquement)
+    // ============================================
     const drawer = document.getElementById('nav-drawer');
     const fab = document.getElementById('nav-drawer-fab');
     const overlay = document.getElementById('nav-drawer-overlay');

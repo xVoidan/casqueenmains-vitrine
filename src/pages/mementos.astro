@@ -15,6 +15,11 @@ if (error) {
 
 <Layout title="Mémentos & Référentiels - Casque En Mains">
   <div class="learn-container">
+    <!-- Background decorative gradients -->
+    <div class="learn-bg-decoration">
+      <div class="learn-bg-gradient-1"></div>
+      <div class="learn-bg-gradient-2"></div>
+    </div>
     <div class="learn-content">
       <!-- Header -->
       <div class="learn-header">
@@ -105,14 +110,44 @@ if (error) {
     /* Container */
     .learn-container {
       min-height: 100vh;
-      background: linear-gradient(135deg, #1a1a2e 0%, #252545 100%);
+      background: #0B1121;
       padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background decorative gradients */
+    .learn-bg-decoration {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .learn-bg-gradient-1 {
+      position: absolute;
+      top: 0;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+    }
+
+    .learn-bg-gradient-2 {
+      position: absolute;
+      bottom: 20%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.06) 0%, transparent 70%);
     }
 
     .learn-content {
       max-width: 1200px;
       margin: 0 auto;
       padding: 2rem 1rem 4rem;
+      position: relative;
+      z-index: 1;
     }
 
     /* Header */
@@ -287,7 +322,7 @@ if (error) {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      background: linear-gradient(135deg, #1a1a2e 0%, #252545 100%);
+      background: #0B1121;
       display: block;
       transition: transform 0.3s ease;
     }

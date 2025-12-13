@@ -1,0 +1,156 @@
+---
+
+---
+
+<section id="gamification" class="py-24 bg-navy-800 relative overflow-hidden">
+    <!-- Background -->
+    <div class="absolute inset-0 bg-gradient-to-b from-navy-900 via-navy-800 to-navy-900 pointer-events-none"></div>
+    <div class="absolute top-1/2 left-0 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2"></div>
+    <div class="absolute top-1/2 right-0 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center px-3 py-1 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-medium mb-4">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Gamification
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                Apprenez en vous <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">amusant</span>
+            </h2>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Gagnez de l'XP, débloquez des badges et maintenez votre série. La motivation au quotidien.
+            </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- XP & Grades -->
+            <div class="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-6 hover:border-red-500/30 transition-all duration-300">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-red-500/20 to-red-600/10 p-1">
+                        <img src="/grade-sergent.webp" alt="Grade Sergent" class="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Sergent</h3>
+                        <p class="text-sm text-gray-400">Grade actuel</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm mb-4">
+                    Gagnez de l'XP à chaque activité et montez en grade.
+                </p>
+                <!-- XP Bar Visual - PWA Style -->
+                <div class="bg-navy-900/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <span class="text-white font-bold">2,450 XP</span>
+                        <span class="text-gray-500">/ 3,000 XP</span>
+                    </div>
+                    <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full w-[82%] bg-gradient-to-r from-red-600 to-red-400 rounded-full"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">550 XP avant Sergent-Chef</p>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-all duration-300">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Badges & Succès</h3>
+                <p class="text-gray-400 text-sm mb-4">
+                    Débloquez des badges de différentes raretés en accomplissant des défis.
+                </p>
+                <!-- Badges Visual - PWA Style with rarity colors -->
+                <div class="flex gap-2 flex-wrap">
+                    <!-- Common (blue) -->
+                    <div class="w-11 h-11 rounded-xl bg-blue-500/15 border-2 border-blue-500/40 flex items-center justify-center relative" title="Commun">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                    </div>
+                    <!-- Rare (purple) -->
+                    <div class="w-11 h-11 rounded-xl bg-purple-500/15 border-2 border-purple-500/40 flex items-center justify-center relative" title="Rare">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </span>
+                    </div>
+                    <!-- Epic (orange) -->
+                    <div class="w-11 h-11 rounded-xl bg-orange-500/15 border-2 border-orange-500/40 flex items-center justify-center" title="Épique">
+                        <svg class="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                    </div>
+                    <!-- Legendary (red) - locked -->
+                    <div class="w-11 h-11 rounded-xl bg-red-500/10 border-2 border-red-500/20 border-dashed flex items-center justify-center opacity-50" title="Légendaire">
+                        <svg class="w-5 h-5 text-red-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Streaks -->
+            <div class="group bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-6 hover:border-orange-500/30 transition-all duration-300">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-orange-400 flame-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-bold text-white">5</span>
+                        <span class="text-gray-400 text-sm ml-1">jours</span>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Série quotidienne</h3>
+                <p class="text-gray-400 text-sm italic mb-4">Belle série ! Continuez !</p>
+
+                <!-- 7-day Calendar - PWA Style -->
+                <div class="flex gap-2 justify-between">
+                    {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
+                        <div class="flex flex-col items-center gap-1.5">
+                            <span class="text-[10px] font-semibold text-gray-500 uppercase">{day}</span>
+                            <div class={`w-9 h-9 rounded-lg flex items-center justify-center ${i < 5 ? 'bg-red-500/15 border border-red-500/30' : 'bg-white/5 border border-white/10'}`}>
+                                {i < 5 ? (
+                                    <svg class="w-4 h-4 text-orange-400 flame-icon" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                                    </svg>
+                                ) : (
+                                    <span class="text-xs text-gray-500 font-medium">{i + 1}</span>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .flame-icon {
+        animation: flameFlicker 2s ease-in-out infinite;
+    }
+
+    @keyframes flameFlicker {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.85;
+            transform: scale(1.05);
+        }
+    }
+</style>

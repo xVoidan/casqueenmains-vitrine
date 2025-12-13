@@ -3,45 +3,28 @@
 ---
 
 <section class="relative pt-24 pb-12 lg:pt-36 lg:pb-20 overflow-hidden">
-    <!-- Background Gradients -->
+    <!-- Background Gradient (no blur for performance) -->
     <div
-        class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0 pointer-events-none"
+        class="absolute inset-0 z-0 pointer-events-none bg-gradient-to-br from-blue-600/10 via-transparent to-accent/5"
     >
-        <div
-            class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen"
-        >
-        </div>
-        <div
-            class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] mix-blend-screen"
-        >
-        </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <!-- Text Content -->
             <div class="text-left">
-                <div
-                    class="inline-flex items-center px-3 py-1 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-medium mb-6 backdrop-blur-sm"
-                >
-                    <span
-                        class="flex h-2 w-2 rounded-full bg-accent mr-2 animate-pulse"
-                    ></span>
-                    Nouveau : Concours blanc disponible
-                </div>
-
                 <h1
                     class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight mb-6"
                 >
-                    Maximisez <br />
+                    Développez et maintenez<br />
                     <span
-                        class="text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400"
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-orange-400"
                         >vos compétences</span
                     >
                 </h1>
 
                 <p class="text-lg text-gray-400 mb-8 max-w-lg leading-relaxed">
-                    L'application tout-en-un qui vous accompagne dans votre préparation au concours, jusqu'à votre remise de casque et plus encore !
+                    Sélection BSPP, BSPM ou concours SPP : on vous accompagne jusqu'à votre remise de casque et tout au long de votre carrière opérationnelle.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4">
@@ -49,7 +32,7 @@
                         href="https://app.casqueenmains.fr"
                         class="inline-flex justify-center items-center px-6 py-3 rounded-full bg-accent hover:bg-accent-hover text-white font-semibold text-base transition-all duration-200 shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-1"
                     >
-                        Télécharger l'application
+                        Accéder à l'application
                         <svg
                             class="ml-2 w-5 h-5"
                             fill="none"
@@ -63,29 +46,17 @@
                         >
                     </a>
                     <a
-                        href="#features"
+                        href="#features-detailed"
                         class="inline-flex justify-center items-center px-6 py-3 rounded-full glass text-white font-medium hover:bg-white/10 transition-all duration-200 text-base"
                     >
-                        En savoir plus
+                        Découvrir les fonctionnalités
                     </a>
                 </div>
 
-                <div class="mt-8 flex items-center gap-4 text-sm text-gray-500">
-                    <div class="flex -space-x-2">
-                        <div
-                            class="w-8 h-8 rounded-full bg-gray-700 border-2 border-navy-900"
-                        >
-                        </div>
-                        <div
-                            class="w-8 h-8 rounded-full bg-gray-600 border-2 border-navy-900"
-                        >
-                        </div>
-                        <div
-                            class="w-8 h-8 rounded-full bg-gray-500 border-2 border-navy-900"
-                        >
-                        </div>
-                    </div>
-                    <p>Rejoignez +2000 candidats</p>
+                <!-- Badge essai gratuit -->
+                <div class="mt-6 inline-flex items-center px-3 py-1 rounded-full border border-accent/30 bg-accent/15 text-accent text-xs font-medium">
+                    <span class="flex h-2 w-2 rounded-full bg-accent mr-2 animate-pulse"></span>
+                    Essai gratuit 7 jours • Sans engagement
                 </div>
             </div>
 
@@ -106,9 +77,9 @@
                     </div>
                 </div>
 
-                <!-- Decorative Elements behind phone -->
+                <!-- Decorative Elements behind phone (no blur) -->
                 <div
-                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[80%] bg-linear-to-tr from-blue-500/20 to-accent/20 blur-[60px] rounded-full -z-10"
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[60%] bg-gradient-to-tr from-blue-500/10 to-accent/10 rounded-full -z-10"
                 >
                 </div>
             </div>

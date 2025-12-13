@@ -6,13 +6,9 @@
     id="features-detailed"
     class="py-24 bg-navy-900 relative overflow-hidden"
 >
-    <!-- Background decorative elements -->
+    <!-- Background gradient (no blur for performance) -->
     <div
-        class="absolute top-1/4 right-0 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"
-    >
-    </div>
-    <div
-        class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[100px] pointer-events-none"
+        class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-accent/5 pointer-events-none"
     >
     </div>
 
@@ -38,11 +34,10 @@
                     Apprendre
                 </div>
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
-                    Maîtrisez chaque sujet sur le bout des doigts
+                    Accédez aux ressources
                 </h2>
                 <p class="text-gray-400 text-lg mb-8 leading-relaxed">
-                    Une base de connaissance complète pour ne rien laisser au
-                    hasard.
+                    Tout ce qu'il faut pour maintenir vos connaissances et apprendre.
                 </p>
                 <ul class="space-y-4">
                     <li class="flex items-start">
@@ -63,11 +58,10 @@
                         </div>
                         <div>
                             <h3 class="text-white font-semibold">
-                                Fiches de révision
+                                Mémentos
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Des résumés clairs et synthétiques pour chaque
-                                module.
+                                Fiches de synthèse basées sur les référentiels officiels.
                             </p>
                         </div>
                     </li>
@@ -89,11 +83,10 @@
                         </div>
                         <div>
                             <h3 class="text-white font-semibold">
-                                Veille permanente
+                                Référentiels officiels
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Restez informé des dernières actualités et mises
-                                à jour réglementaires.
+                                Documents centralisés à annoter avec vos propres notes.
                             </p>
                         </div>
                     </li>
@@ -115,32 +108,226 @@
                         </div>
                         <div>
                             <h3 class="text-white font-semibold">
-                                Questions personnalisées
+                                Podcasts & Audio
                             </h3>
                             <p class="text-sm text-gray-500">
-                                L'IA s'adapte à votre niveau pour vous proposer
-                                du contenu pertinent.
+                                Révisez en écoutant grâce aux podcasts et à la lecture vocale.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div
+                            class="shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-1 mr-4"
+                        >
+                            <svg
+                                class="w-4 h-4 text-blue-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">
+                                Bloc-notes
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                Créez vos propres fiches et organisez vos révisions.
                             </p>
                         </div>
                     </li>
                 </ul>
             </div>
             <div class="lg:w-1/2 relative">
-                <div
-                    class="absolute inset-0 bg-blue-500/20 blur-[80px] rounded-full"
-                >
-                </div>
-                <div
-                    class="glass-card p-2 rounded-2xl border border-white/10 relative rotate-2 hover:rotate-0 transition-transform duration-500"
-                >
+                <div class="space-y-4">
+                    <!-- Screenshot 1 -->
                     <div
-                        class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
                     >
-                        <img
-                            src="/revision.png"
-                            alt="Interface de lecture des fiches"
-                            class="w-full h-full object-cover"
-                        />
+                        <div
+                            class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        >
+                            <img
+                                src="/revision.png"
+                                alt="Interface de lecture des fiches"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+                    <!-- Screenshot 2 -->
+                    <div
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
+                    >
+                        <div
+                            class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        >
+                            <img
+                                src="/revision-2.png"
+                                alt="Référentiels et podcasts"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Journal Hebdo -->
+        <div class="flex flex-col lg:flex-row-reverse items-center gap-16 mb-32">
+            <div class="lg:w-1/2">
+                <div
+                    class="inline-flex items-center px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-medium mb-6"
+                >
+                    <svg
+                        class="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                        ></path></svg
+                    >
+                    Journal Hebdo
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                    Restez connecté à l'actualité <span class="text-amber-400">sapeur-pompier</span>
+                </h2>
+                <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                    Chaque semaine, recevez l'essentiel de l'actualité pompier et de la veille réglementaire en un seul endroit.
+                </p>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <div
+                            class="shrink-0 w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center mt-1 mr-4"
+                        >
+                            <svg
+                                class="w-4 h-4 text-amber-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">
+                                Actualités SDIS
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                Les dernières nouvelles des services d'incendie et de secours.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div
+                            class="shrink-0 w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center mt-1 mr-4"
+                        >
+                            <svg
+                                class="w-4 h-4 text-amber-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">
+                                Veille réglementaire
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                Décrets, arrêtés et textes officiels à ne pas manquer.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div
+                            class="shrink-0 w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center mt-1 mr-4"
+                        >
+                            <svg
+                                class="w-4 h-4 text-amber-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">
+                                RETEX terrain
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                Retours d'expérience et analyses d'interventions.
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- Widget PWA Mockup -->
+            <div class="lg:w-1/2 relative">
+                <div class="max-w-sm mx-auto">
+                    <div
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
+                    >
+                        <div class="bg-navy-800 rounded-2xl border border-white/10 overflow-hidden">
+                            <!-- Header -->
+                            <div class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-white font-semibold text-sm">Journal Pompier</h3>
+                                        <p class="text-gray-500 text-xs">Votre veille métier</p>
+                                    </div>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                            <!-- Bulletin Item -->
+                            <div class="px-4 pb-3">
+                                <div class="bg-navy-900/50 rounded-xl px-4 py-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span class="text-gray-300 text-sm">Bulletin de la semaine</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 bg-teal-500/20 text-teal-400 text-[10px] font-bold rounded uppercase tracking-wide">
+                                        Nouveau
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Footer -->
+                            <div class="px-4 pb-4">
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span class="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">1</span>
+                                    <span>bulletin non lu</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -171,8 +358,7 @@
                     Préparez-vous aux conditions réelles
                 </h2>
                 <p class="text-gray-400 text-lg mb-8 leading-relaxed">
-                    Mettez-vous à l'épreuve avec des outils conçus pour simuler
-                    l'examen.
+                    Testez vos compétences théoriques grâce aux fonctionnalités dédiées à la préparation aux examens de sélection ou concours.
                 </p>
                 <ul class="space-y-4">
                     <li class="flex items-start">
@@ -256,27 +442,42 @@
                 </ul>
             </div>
             <div class="lg:w-1/2 relative">
-                <div
-                    class="absolute inset-0 bg-accent/20 blur-[80px] rounded-full"
-                >
-                </div>
-                <div
-                    class="glass-card p-2 rounded-2xl border border-white/10 relative -rotate-2 hover:rotate-0 transition-transform duration-500"
-                >
+                <div class="space-y-4">
+                    <!-- Screenshot 1 -->
                     <div
-                        class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
                     >
-                        <img
-                            src="/training.png"
-                            alt="Interface de Quiz"
-                            class="w-full h-full object-cover"
-                        />
+                        <div
+                            class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        >
+                            <img
+                                src="/training.png"
+                                alt="Interface de Quiz"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+                    <!-- Screenshot 2 -->
+                    <div
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
+                    >
+                        <div
+                            class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        >
+                            <img
+                                src="/training-2.png"
+                                alt="Concours blanc"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: S'améliorer -->
+        <!-- Section 3: Progresser & Communauté -->
         <div class="flex flex-col lg:flex-row items-center gap-16">
             <div class="lg:w-1/2">
                 <div
@@ -294,14 +495,13 @@
                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                         ></path></svg
                     >
-                    S'améliorer
+                    Progresser
                 </div>
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
-                    Analysez votre progression
+                    Suivez votre progression et comparez-vous
                 </h2>
                 <p class="text-gray-400 text-lg mb-8 leading-relaxed">
-                    Identifiez vos points forts et vos lacunes pour optimiser
-                    vos révisions.
+                    Analysez vos performances, identifiez vos lacunes et mesurez-vous aux autres candidats.
                 </p>
                 <ul class="space-y-4">
                     <li class="flex items-start">
@@ -322,11 +522,10 @@
                         </div>
                         <div>
                             <h3 class="text-white font-semibold">
-                                Statistiques précises
+                                Statistiques détaillées
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Visualisez votre évolution par matière et par
-                                chapitre.
+                                Visualisez votre évolution par matière et par chapitre.
                             </p>
                         </div>
                     </li>
@@ -348,11 +547,35 @@
                         </div>
                         <div>
                             <h3 class="text-white font-semibold">
-                                Classement global
+                                Classement national & régional
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Comparez-vous aux autres candidats de votre
-                                région.
+                                Comparez-vous aux candidats de toute la France ou de votre département.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <div
+                            class="shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mt-1 mr-4"
+                        >
+                            <svg
+                                class="w-4 h-4 text-green-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path></svg
+                            >
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">
+                                Système d'amis
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                Ajoutez des amis et défiez-les en mode multijoueur.
                             </p>
                         </div>
                     </li>
@@ -377,29 +600,43 @@
                                 Rappel des erreurs
                             </h3>
                             <p class="text-sm text-gray-500">
-                                Revenez automatiquement sur les questions qui
-                                vous ont posé problème.
+                                Revenez automatiquement sur les questions problématiques.
                             </p>
                         </div>
                     </li>
                 </ul>
             </div>
             <div class="lg:w-1/2 relative">
-                <div
-                    class="absolute inset-0 bg-green-500/20 blur-[80px] rounded-full"
-                >
-                </div>
-                <div
-                    class="glass-card p-2 rounded-2xl border border-white/10 relative rotate-2 hover:rotate-0 transition-transform duration-500"
-                >
+                <div class="space-y-4">
+                    <!-- Screenshot 1 -->
                     <div
-                        class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
                     >
-                        <img
-                            src="/progression.png"
-                            alt="Tableau de bord Statistiques"
-                            class="w-full h-full object-cover"
-                        />
+                        <div
+                            class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        >
+                            <img
+                                src="/progression.png"
+                                alt="Statistiques et progression"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+                    <!-- Screenshot 2 -->
+                    <div
+                        class="glass-card p-2 rounded-2xl border border-white/10 relative"
+                    >
+                        <div
+                            class="bg-navy-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/5"
+                        >
+                            <img
+                                src="/classement.png"
+                                alt="Classement et communauté"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
